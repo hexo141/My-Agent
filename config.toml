@@ -17,5 +17,5 @@ SILENCE_THRESHOLD = 90  # 静音阈值(DB)
 SILENCE_DURATION = 2.0   # 静音持续时间（秒）后停止
 MAX_DURATION = 30.0      # 最大录音时长（秒），防止无限录音
 SAVE_PATH = "./tmp" # 保存路径
-DEFAULT_SPT_MODEL_PATH = "Model/Speech_to_Text/vosk-model-cn-kaldi-multicn-0.15"
+DEFAULT_SPT_MODEL_PATH = "Model/stt/vosk-model-cn-kaldi-multicn-0.15"
 mono_save_path = "./mono"
