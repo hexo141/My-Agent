@@ -1,0 +1,6 @@
+openai>=1.0.0
+toml>=0.10.0
+pyaudio>=0.2.11
+vosk>=0.3.45
+librosa
+
