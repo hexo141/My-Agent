@@ -1,2 +1,124 @@
-import requests
 from bs4 import BeautifulSoup
+import requests
+import re
+
+
+def get_stt_model_list():
+    rp = requests.get("https://alphacephei.com/vosk/models")
+    rp.encoding = "utf-8"
+
+    # 创建BeautifulSoup对象
+    soup = BeautifulSoup(rp.text, 'html.parser')
+
+    # 查找包含模型信息的表格
+    tables = soup.find_all('table', class_='table table-bordered')
+
+    # 存储所有模型信息
+    models_data = []
+
+    # 处理第一个表格（主要模型表格）
+    if len(tables) > 0:
+        main_table = tables[0]
+        rows = main_table.find_all('tr')
+        
+        current_category = ""
+        
+        for row in rows:
+            # 检查是否是分类标题行
+            header_cells = row.find_all('th')
+            if header_cells and len(header_cells) >= 5:
+                # 这是表头，跳过
+                continue
+                
+            cells = row.find_all('td')
+            
+            if len(cells) == 5:
+                # 这是正常的模型行
+                model_name = cells[0].get_text(strip=True)
+                model_link = cells[0].find('a')
+                model_url = model_link['href'] if model_link else ""
+                
+                size = cells[1].get_text(strip=True)
+                wer_speed = cells[2].get_text(strip=True)
+                notes = cells[3].get_text(strip=True)
+                license = cells[4].get_text(strip=True)
+                
+                models_data.append({
+                    'category': current_category,
+                    'name': model_name,
+                    'url': model_url,
+                    'size': size,
+                    'wer_speed': wer_speed,
+                    'notes': notes,
+                    'license': license
+                })
+            elif len(cells) == 1:
+                # 这可能是分类标题
+                category_text = cells[0].get_text(strip=True)
+                if category_text and not category_text.startswith(' '):
+                    current_category = category_text
+
+    # 处理第二个表格（标点模型表格）
+    if len(tables) > 1:
+        punctuation_table = tables[1]
+        rows = punctuation_table.find_all('tr')
+        
+        current_category = ""
+        
+        for row in rows:
+            cells = row.find_all('td')
+            
+            if len(cells) == 3:
+                # 正常的标点模型行
+                model_name = cells[0].get_text(strip=True)
+                model_link = cells[0].find('a')
+                model_url = model_link['href'] if model_link else ""
+                
+                size = cells[1].get_text(strip=True)
+                license = cells[2].get_text(strip=True)
+                
+                models_data.append({
+                    'category': f"Punctuation - {current_category}",
+                    'name': model_name,
+                    'url': model_url,
+                    'size': size,
+                    'wer_speed': "",
+                    'notes': "Punctuation and case restoration model",
+                    'license': license
+                })
+            elif len(cells) == 1:
+                # 分类标题
+                category_text = cells[0].get_text(strip=True)
+                if category_text and not category_text.startswith(' '):
+                    current_category = category_text
+
+    # 打印提取结果
+    print("VOSK模型信息提取结果:")
+    print("=" * 80)
+
+    current_cat = ""
+    # for model in models_data:
+    #     if model['category'] != current_cat:
+    #         current_cat = model['category']
+    #         print(f"\n{current_cat}")
+    #         print("-" * 60)
+        
+    #     print(f"模型名称: {model['name']}")
+    #     if model['url']:
+    #         print(f"下载链接: {model['url']}")
+    #     print(f"大小: {model['size']}")
+    #     if model['wer_speed']:
+    #         print(f"词错率/速度: {model['wer_speed']}")
+    #     print(f"说明: {model['notes']}")
+    #     print(f"许可证: {model['license']}")
+    #     print()
+
+    # # 统计信息
+    # categories = set([model['category'] for model in models_data if model['category']])
+    # total_models = len(models_data)
+
+    # print("=" * 80)
+    # print(f"总计: {total_models} 个模型")
+    # print(f"分类数量: {len(categories)}")
+    # print("分类列表:", ", ".join(categories))
+    return models_data
