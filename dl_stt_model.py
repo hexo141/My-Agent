@@ -1,8 +1,87 @@
 from bs4 import BeautifulSoup
 import requests
 import re
+from tqdm import tqdm
+search_lists = lambda key, lists: [item for item in (lists if isinstance(lists[0], str) else [item for lst in lists for item in lst]) if key in str(item)]
 
+import requests
+import os
+from urllib.parse import urlparse
+import mimetypes
 
+def download_file(url, save_path=None, chunk_size=8192):
+    """
+    使用tqdm显示下载进度条
+    
+    Args:
+        url: 文件URL
+        save_path: 保存路径
+        chunk_size: 分块大小
+    
+    Returns:
+        保存的文件路径
+    """
+    # 设置请求头
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+    
+    # 发送请求
+    response = requests.get(url, headers=headers, stream=True)
+    response.raise_for_status()
+    
+    # 获取文件大小
+    total_size = int(response.headers.get('content-length', 0))
+    
+    # 获取文件名
+    filename = get_filename_from_response(url, response)
+    
+    # 确定保存路径
+    if save_path is None:
+        save_path = filename
+    elif os.path.isdir(save_path):
+        save_path = os.path.join(save_path, filename)
+    
+    # 创建目录（如果不存在）
+    os.makedirs(os.path.dirname(save_path) if os.path.dirname(save_path) else '.', exist_ok=True)
+    
+    # 使用tqdm显示进度条
+    with open(save_path, 'wb') as file, tqdm(
+        desc=filename,
+        total=total_size,
+        unit='B',
+        unit_scale=True,
+        unit_divisor=1024,
+    ) as progress_bar:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                file.write(chunk)
+                progress_bar.update(len(chunk))
+    
+    print(f"✓ 下载完成: {save_path}")
+    return save_path
+
+def get_filename_from_response(url, response):
+    """
+    从响应头或URL中获取文件名
+    """
+    # 从Content-Disposition头获取文件名
+    content_disposition = response.headers.get('Content-Disposition', '')
+    if 'filename=' in content_disposition:
+        filename = content_disposition.split('filename=')[1].strip('"\'')
+        if filename:
+            return filename
+    
+    # 从URL路径获取文件名
+    parsed_url = urlparse(url)
+    filename = os.path.basename(parsed_url.path)
+    if filename and filename != '/':
+        return filename
+    
+    # 根据Content-Type生成文件名
+    content_type = response.headers.get('Content-Type', '').split(';')[0]
+    extension = mimetypes.guess_extension(content_type) or '.bin'
+    return f"downloaded_file{extension}"
 def get_stt_model_list():
     rp = requests.get("https://alphacephei.com/vosk/models")
     rp.encoding = "utf-8"
@@ -92,11 +171,6 @@ def get_stt_model_list():
                 if category_text and not category_text.startswith(' '):
                     current_category = category_text
 
-    # 打印提取结果
-    print("VOSK模型信息提取结果:")
-    print("=" * 80)
-
-    current_cat = ""
     # for model in models_data:
     #     if model['category'] != current_cat:
     #         current_cat = model['category']
@@ -123,7 +197,25 @@ def get_stt_model_list():
     # print("分类列表:", ", ".join(categories))
     return models_data
 models_data = get_stt_model_list()
+model_name_list = []
 for model in models_data:
     if len(model["url"]) == 0:
         continue
-    print(model)
+    # print(f"[{num}]: {model['name']}")
+    model_name_list.append(model['name'])
+print("请输入你想使用的语音输入语(如: cn, en): ")
+s_key = input("Please enter the voice input language you want to use (e.g., cn, en) :")
+s_list = search_lists(s_key, model_name_list)
+num = 0
+for i in s_list:
+    print(f"[{num}]: {i}")
+    num += 1
+s_l = s_list[int(input(f"Please select a model (0-{num - 1})："))]
+for model in models_data:
+    if len(model["url"]) == 0:
+        continue
+    # print(f"[{num}]: {model['name']}")
+    if model["name"] == s_l:
+        print(f"[url]: {model["url"]}")
+        download_file(model["url"], "Model/stt/")
+        break
