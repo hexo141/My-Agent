@@ -122,3 +122,8 @@ def get_stt_model_list():
     # print(f"分类数量: {len(categories)}")
     # print("分类列表:", ", ".join(categories))
     return models_data
+models_data = get_stt_model_list()
+for model in models_data:
+    if len(model["url"]) == 0:
+        continue
+    print(model)
