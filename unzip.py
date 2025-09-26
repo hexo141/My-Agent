@@ -20,12 +20,13 @@ def unzip(zip_file_path, extract_to_path):
             
             if file.endswith('/'):  # 目录条目
                 os.makedirs(target_path, exist_ok=True)
-                print(f"[{i}/{len(file_list)}] 创建目录: {file}")
+                print(f"[{i}/{len(file_list)}] mkdir: {file}")
             else:  # 文件条目
                 # 确保父目录存在
                 os.makedirs(os.path.dirname(target_path), exist_ok=True)
                 # 解压到指定目录
                 zip_ref.extract(file, extract_to_path)
-                print(f"[{i}/{len(file_list)}] 解压文件: {file}")
+                print(f"[{i}/{len(file_list)}] unzip: {file}")
         
         print("[✓] Success！")
+        return True

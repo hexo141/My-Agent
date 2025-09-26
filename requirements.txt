@@ -7,3 +7,4 @@ requests
 BeautifulSoup4
 tqdm
 tmol
+tomlkit

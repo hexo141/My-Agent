@@ -7,6 +7,11 @@ import requests
 import os
 import dl_file
 import unzip
+import tomlkit
+
+with open("config.toml", "r", encoding="utf-8") as f:
+    toml_config = tomlkit.load(f)
+
 stt_model_path = pathlib.Path("Model") / "stt" 
 if not os.path.exists(stt_model_path):
     stt_model_path.mkdir(parents=True,exist_ok=True)
@@ -151,5 +156,16 @@ for model in models_data:
         save_path = dl_file.download_file(model["url"], "Model/stt/")
         if os.path.exists(save_path):
             extract_to = pathlib.Path("Model") / "stt"
-            unzip.unzip(save_path, extract_to)
+            if unzip.unzip(save_path, extract_to):
+                if input("Do you want to delete the zip file? (y/n): ").lower() == 'y':
+                    os.remove(save_path)
+                print("是否设置为默认stt模型？(y/n): ")
+                if input("Set as the default STT model?(y/n): ").lower() == 'y':
+                    toml_config["record"]["DEFAULT_SPT_MODEL_PATH"] = str(extract_to / os.path.splitext(os.path.basename(save_path))[0])
+                    
+                    with open("config.toml", "w", encoding="utf-8") as f:
+                        tomlkit.dump(toml_config, f)
+                    
+                    print(f"已将 {extract_to / os.path.splitext(os.path.basename(save_path))[0]} 设为默认STT模型。")
+                    print("[-] Done.")
         break
