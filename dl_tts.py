@@ -131,7 +131,8 @@ def install_uv():
     """安装uv包管理器"""
     print_step("安装 UV 包管理器")
     success = False
-    for pip_mirror in setup_mirrors():
+    mirrors = setup_mirrors()["pip_mirrors"]
+    for pip_mirror in mirrors:
         try:
             cmd = f"{sys.executable} -m pip install -i {pip_mirror} -U uv"
             if run(cmd, check=False):
@@ -151,7 +152,6 @@ def clone_repository():
     if not os.path.exists("index-tts"):
         run("git clone https://github.com/index-tts/index-tts.git")
     os.chdir("index-tts")
-    run("git lfs pull")
     print_ok("代码仓库克隆完成")
 
 def install_dependencies():

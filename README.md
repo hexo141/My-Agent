@@ -50,11 +50,6 @@ python dl_file.py
 python dl_stt_model.py
 ```
 
-### 解压文件
-
-```bash
-python unzip.py
-```
 
 ## 配置
 
