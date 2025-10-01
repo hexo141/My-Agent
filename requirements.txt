@@ -6,5 +6,5 @@ librosa
 requests
 BeautifulSoup4
 tqdm
-tmol
+toml
 tomlkit
