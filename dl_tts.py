@@ -162,7 +162,7 @@ def install_dependencies():
 
     for mirror in mirrors_config["pip_mirrors"]:
         try:
-            cmd = f"uv sync --all-extras --default-index {mirror}"
+            cmd = f"uv sync --all-extras --default-index {mirror} --python {sys.executable}"
             if run(cmd, check=False):
                 success = True
                 break
@@ -189,7 +189,7 @@ def download_models():
         # 中国用户优先使用ModelScope
         try:
             print("从 ModelScope 下载...")
-            run("uv tool install 'modelscope'")
+            run(f"uv tool install 'modelscope' --python {sys.executable}")
             if run("modelscope download --model IndexTeam/IndexTTS-2 --local_dir checkpoints", check=False):
                 success = True
         except Exception as e:
@@ -199,7 +199,7 @@ def download_models():
         if not success:
             try:
                 print("\n从 HuggingFace 镜像下载...")
-                run("uv tool install 'huggingface-hub[cli,hf_xet]'")
+                run(f"uv tool install 'huggingface-hub[cli,hf_xet]' --python {sys.executable}")
                 if run("hf download IndexTeam/IndexTTS-2 --local-dir=checkpoints", check=False):
                     success = True
             except Exception as e:
@@ -208,7 +208,7 @@ def download_models():
         # 海外用户优先使用HuggingFace
         try:
             print("从 HuggingFace 下载...")
-            run("uv tool install 'huggingface-hub[cli,hf_xet]'")
+            run(f"uv tool install 'huggingface-hub[cli,hf_xet]' --python {sys.executable}")
             if run("hf download IndexTeam/IndexTTS-2 --local-dir=checkpoints", check=False):
                 success = True
         except Exception as e:
@@ -218,7 +218,7 @@ def download_models():
         if not success:
             try:
                 print("\n从 ModelScope 下载...")
-                run("uv tool install 'modelscope'")
+                run(F"uv tool install 'modelscope' --python {sys.executable}")
                 if run("modelscope download --model IndexTeam/IndexTTS-2 --local_dir checkpoints", check=False):
                     success = True
             except Exception as e:
